@@ -1,6 +1,0 @@
-export type Entity = {
-  _id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-};
