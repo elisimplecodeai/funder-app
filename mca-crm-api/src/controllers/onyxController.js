@@ -51,6 +51,40 @@ exports.syncApplications = async (req, res, next) => {
 };
 
 /**
+ * @desc    Fetch user roles from OnyxIQ
+ * @route   POST /api/v1/onyx/user-roles
+ * @access  Private
+ */
+exports.getUserRoles = async (req, res, next) => {
+    try {
+        const { bearerToken } = req.body;
+        
+        if (!bearerToken) {
+            return res.status(400).json({
+                success: false,
+                message: 'Bearer token is required'
+            });
+        }
+        
+        const onyxService = new OnyxService(bearerToken);
+        const userRoles = await onyxService.getUserRoles();
+        
+        res.status(200).json({
+            success: true,
+            message: 'User roles fetched successfully',
+            data: userRoles
+        });
+    } catch (err) {
+        console.error('Error fetching user roles:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch user roles',
+            error: err.message
+        });
+    }
+};
+
+/**
  * @desc    Sync fundings from OnyxIQ
  * @route   POST /api/v1/onyx/sync/fundings
  * @access  Private

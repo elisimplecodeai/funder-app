@@ -8,7 +8,8 @@ const {
     performFullSync,
     getSyncStatus,
     getFunders,
-    getProgress
+    getProgress,
+    getUserRoles
 } = require('../controllers/onyxController');
 
 const { autoLogin } = require('../controllers/onyxAutoLoginController');
@@ -27,6 +28,11 @@ router.post('/auto-login', autoLogin);
 // @desc    Get funders from OnyxIQ
 // @access  Public (for import flow)
 router.get('/funders', getFunders);
+
+// @route   POST /api/v1/onyx/user-roles
+// @desc    Get user roles from OnyxIQ settings
+// @access  Public (for import flow)
+router.post('/user-roles', getUserRoles);
 
 // @route   POST /api/v1/onyx/sync/clients
 // @desc    Sync clients from OnyxIQ

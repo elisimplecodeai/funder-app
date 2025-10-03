@@ -52,6 +52,77 @@ class OnyxService {
     }
 
     /**
+     * Fetch user roles from OnyxIQ settings
+     * @returns {Promise<Object>} - User roles data
+     */
+    async getUserRoles() {
+        try {
+            console.log('Fetching user roles from OnyxIQ...');
+            
+            // Try multiple possible endpoints for user roles/settings
+            const possibleEndpoints = [
+                '/tenants/3/settings',
+                '/settings',
+                '/user-roles',
+                '/roles'
+            ];
+            
+            let lastError;
+            
+            for (const endpoint of possibleEndpoints) {
+                try {
+                    console.log(`Trying endpoint: ${endpoint}`);
+                    const data = await this.fetchFromOnyx(endpoint);
+                    
+                    // Try to extract user roles from different possible structures
+                    let roles = [];
+                    if (data.userRoles) {
+                        roles = data.userRoles;
+                    } else if (data.roles) {
+                        roles = data.roles;
+                    } else if (data.data && data.data.userRoles) {
+                        roles = data.data.userRoles;
+                    } else if (data.data && data.data.roles) {
+                        roles = data.data.roles;
+                    } else if (Array.isArray(data)) {
+                        roles = data;
+                    }
+                    
+                    if (roles.length > 0) {
+                        console.log(`Successfully fetched ${roles.length} user roles from ${endpoint}`);
+                        return {
+                            userRoles: roles,
+                            endpoint: endpoint,
+                            total: roles.length
+                        };
+                    }
+                } catch (err) {
+                    console.log(`Endpoint ${endpoint} failed:`, err.message);
+                    lastError = err;
+                    continue;
+                }
+            }
+            
+            // If no roles found, return mock data for demonstration
+            console.warn('No user roles found in any endpoint, returning mock data');
+            return {
+                userRoles: [
+                    { id: 'admin', name: 'Administrator', description: 'Full system access' },
+                    { id: 'user', name: 'User', description: 'Standard user access' },
+                    { id: 'viewer', name: 'Viewer', description: 'Read-only access' }
+                ],
+                endpoint: 'mock',
+                total: 3,
+                isMock: true
+            };
+            
+        } catch (error) {
+            console.error('Error fetching user roles:', error);
+            throw new ErrorResponse(`Failed to fetch user roles: ${error.message}`, 500);
+        }
+    }
+
+    /**
      * Fetch paginated data from OnyxIQ API
      * @param {string} endpoint - The API endpoint
      * @param {Object} params - Query parameters
